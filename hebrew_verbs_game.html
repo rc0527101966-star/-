@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק פועל, שם פועל ושם פעולה</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .question-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .verb-display {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .verb-emoji {
+            font-size: 5em;
+            margin-bottom: 15px;
+        }
+
+        .verb-text {
+            font-size: 2em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #555;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .option-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .option-btn.correct {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #4CAF50;
+        }
+
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f44336;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto 0;
+            font-weight: bold;
+            transition: transform 0.3s;
+            display: none;
+        }
+
+        .next-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .next-btn.show {
+            display: block;
+        }
+
+        .final-score {
+            text-align: center;
+            display: none;
+        }
+
+        .final-score.show {
+            display: block;
+        }
+
+        .final-score h2 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .final-message {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .restart-btn:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .correct-animation {
+            animation: bounce 0.5s;
+        }
+
+        .fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y));
+                opacity: 0;
+            }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 משחק הפעלים 🎮</h1>
+        <p class="subtitle">פועל, שם פועל ושם פעולה</p>
+
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">שאלה</div>
+                <div class="score-value" id="currentQuestion">1</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">נכונות</div>
+                <div class="score-value" id="correctScore">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">שגויות</div>
+                <div class="score-value" id="wrongScore">0</div>
+            </div>
+        </div>
+
+        <div class="question-card" id="questionCard">
+            <div class="verb-display">
+                <div class="verb-emoji" id="verbEmoji">🏃</div>
+                <div class="verb-text" id="verbText">רץ</div>
+            </div>
+            <div class="question-text" id="questionText">מהו שם הפועל של הפועל "רץ"?</div>
+            <div class="options" id="optionsContainer"></div>
+            <div class="feedback" id="feedback"></div>
+            <button class="next-btn" id="nextBtn">שאלה הבאה ➡️</button>
+        </div>
+
+        <div class="final-score" id="finalScore">
+            <h2>🎉 כל הכבוד! 🎉</h2>
+            <div class="final-message" id="finalMessage"></div>
+            <button class="restart-btn" onclick="restartGame()">שחק שוב 🔄</button>
+        </div>
+    </div>
+
+    <div class="fireworks" id="fireworks"></div>
+
+    <audio id="correctSound" preload="auto"></audio>
+    <audio id="wrongSound" preload="auto"></audio>
+    <audio id="victorySound" preload="auto"></audio>
+
+    <script>
+        const questions = [
+            {
+                verb: "רץ",
+                emoji: "🏃",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "רץ"?',
+                options: ["ריצה", "רוץ", "לרוץ", "רצה"],
+                correct: 2
+            },
+            {
+                verb: "כתב",
+                emoji: "✍️",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "כתב"?',
+                options: ["כתיבה", "לכתוב", "כותב", "כתוב"],
+                correct: 0
+            },
+            {
+                verb: "שר",
+                emoji: "🎤",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "שר"?',
+                options: ["שירה", "לשיר", "שיר", "שרה"],
+                correct: 1
+            },
+            {
+                verb: "קרא",
+                emoji: "📖",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "קרא"?',
+                options: ["לקרוא", "קורא", "קריאה", "קרה"],
+                correct: 2
+            },
+            {
+                verb: "צייר",
+                emoji: "🎨",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "צייר"?',
+                options: ["ציור", "לצייר", "מצייר", "צר"],
+                correct: 1
+            },
+            {
+                verb: "שחה",
+                emoji: "🏊",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "שחה"?',
+                options: ["לשחות", "שוחה", "שחייה", "שחה"],
+                correct: 2
+            },
+            {
+                verb: "קפץ",
+                emoji: "🦘",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "קפץ"?',
+                options: ["קפיצה", "קופץ", "לקפוץ", "קפץ"],
+                correct: 2
+            },
+            {
+                verb: "בישל",
+                emoji: "👨‍🍳",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "בישל"?',
+                options: ["לבשל", "מבשל", "בישול", "בשל"],
+                correct: 2
+            },
+            {
+                verb: "רקד",
+                emoji: "💃",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "רקד"?',
+                options: ["ריקוד", "לרקוד", "רוקד", "רקד"],
+                correct: 1
+            },
+            {
+                verb: "למד",
+                emoji: "📚",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "למד"?',
+                options: ["ללמוד", "לומד", "למידה", "למד"],
+                correct: 2
+            },
+            {
+                verb: "שיחק",
+                emoji: "⚽",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "שיחק"?',
+                options: ["משחק", "לשחק", "שחקן", "שחק"],
+                correct: 1
+            },
+            {
+                verb: "אכל",
+                emoji: "🍕",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "אכל"?',
+                options: ["לאכול", "אוכל", "אכילה", "אכל"],
+                correct: 2
+            },
+            {
+                verb: "ישן",
+                emoji: "😴",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "ישן"?',
+                options: ["שינה", "לישון", "ישן", "ישון"],
+                correct: 1
+            },
+            {
+                verb: "שתה",
+                emoji: "🥤",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "שתה"?',
+                options: ["לשתות", "שותה", "שתייה", "שתה"],
+                correct: 2
+            },
+            {
+                verb: "צחק",
+                emoji: "😂",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "צחק"?',
+                options: ["צחוק", "לצחוק", "צוחק", "צחק"],
+                correct: 1
+            },
+            {
+                verb: "דיבר",
+                emoji: "💬",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "דיבר"?',
+                options: ["לדבר", "מדבר", "דיבור", "דבר"],
+                correct: 2
+            },
+            {
+                verb: "הלך",
+                emoji: "🚶",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "הלך"?',
+                options: ["הליכה", "ללכת", "הולך", "לך"],
+                correct: 1
+            },
+            {
+                verb: "חשב",
+                emoji: "🤔",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "חשב"?',
+                options: ["לחשוב", "חושב", "חשיבה", "חשב"],
+                correct: 2
+            },
+            {
+                verb: "שמע",
+                emoji: "👂",
+                type: "שם פועל",
+                question: 'מהו שם הפועל של הפועל "שמע"?',
+                options: ["שמיעה", "לשמוע", "שומע", "שמע"],
+                correct: 1
+            },
+            {
+                verb: "הרגיש",
+                emoji: "❤️",
+                type: "שם פעולה",
+                question: 'מהו שם הפעולה של הפועל "הרגיש"?',
+                options: ["להרגיש", "מרגיש", "הרגשה", "רגש"],
+                correct: 2
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+
+        // יצירת צלילים בעזרת Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playCorrectSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+            oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function playWrongSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playVictorySound() {
+            const notes = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+            notes.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.1);
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + index * 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.1 + 0.3);
+                
+                oscillator.start(audioContext.currentTime + index * 0.1);
+                oscillator.stop(audioContext.currentTime + index * 0.1 + 0.3);
+            });
+        }
+
+        function createFirework(x, y) {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500'];
+            const particles = 30;
+            
+            for (let i = 0; i < particles; i++) {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                firework.style.left = x + 'px';
+                firework.style.top = y + 'px';
+                firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const angle = (Math.PI * 2 * i) / particles;
+                const velocity = 100 + Math.random() * 100;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                firework.style.setProperty('--x', tx + 'px');
+                firework.style.setProperty('--y', ty + 'px');
+                
+                document.getElementById('fireworks').appendChild(firework);
+                
+                setTimeout(() => firework.remove(), 1000);
+            }
+        }
+
+        function triggerFireworks() {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.5;
+                    createFirework(x, y);
+                }, i * 300);
+            }
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('verbEmoji').textContent = q.emoji;
+            document.getElementById('verbText').textContent = q.verb;
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkAnswer(index);
+                optionsContainer.appendChild(btn);
+            });
+            
+            document.getElementById('feedback').classList.remove('show');
+            document.getElementById('nextBtn').classList.remove('show');
+        }
+
+        function checkAnswer(selectedIndex) {
+            const q = questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedback = document.getElementById('feedback');
+            
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === q.correct) {
+                    btn.classList.add('correct');
+                }
+                if (index === selectedIndex && index !== q.correct) {
+                    btn.classList.add('wrong');
+                }
+            });
+            
+            if (selectedIndex === q.correct) {
+                correctAnswers++;
+                document.getElementById('correctScore').textContent = correctAnswers;
+                feedback.textContent = '🎉 מצוין! תשובה נכונה!';
+                feedback.className = 'feedback correct show';
+                document.querySelector('.verb-display').classList.add('correct-animation');
+                
+                // אפקטים לתשובה נכונה
+                playCorrectSound();
+                triggerFireworks();
+            } else {
+                wrongAnswers++;
+                document.getElementById('wrongScore').textContent = wrongAnswers;
+                feedback.textContent = `❌ לא נכון. התשובה הנכונה היא: ${q.options[q.correct]}`;
+                feedback.className = 'feedback wrong show';
+                
+                // אפקטים לתשובה שגויה
+                playWrongSound();
+                document.querySelector('.question-card').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.question-card').classList.remove('shake');
+                }, 500);
+            }
+            
+            document.getElementById('nextBtn').classList.add('show');
+        }
+
+        document.getElementById('nextBtn').onclick = function() {
+            document.querySelector('.verb-display').classList.remove('correct-animation');
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showFinalScore();
+            }
+        };
+
+        function showFinalScore() {
+            document.getElementById('questionCard').style.display = 'none';
+            const finalScore = document.getElementById('finalScore');
+            const finalMessage = document.getElementById('finalMessage');
+            
+            const percentage = Math.round((correctAnswers / questions.length) * 100);
+            let message = '';
+            
+            if (percentage === 100) {
+                message = `מושלם! ענית נכון על כל ${questions.length} השאלות! 🌟`;
+                playVictorySound();
+                triggerFireworks();
+                setTimeout(() => triggerFireworks(), 1000);
+            } else if (percentage >= 80) {
+                message = `כל הכבוד! ענית נכון על ${correctAnswers} מתוך ${questions.length} שאלות! 👏`;
+                playVictorySound();
+                triggerFireworks();
+            } else if (percentage >= 60) {
+                message = `יפה מאוד! ענית נכון על ${correctAnswers} מתוך ${questions.length} שאלות. המשך להתאמן! 💪`;
+            } else {
+                message = `ענית נכון על ${correctAnswers} מתוך ${questions.length} שאלות. אל תתייאש, נסה שוב! 📚`;
+            }
+            
+            finalMessage.textContent = message;
+            finalScore.classList.add('show');
+        }
+
+        function restartGame() {
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            
+            document.getElementById('correctScore').textContent = '0';
+            document.getElementById('wrongScore').textContent = '0';
+            document.getElementById('questionCard').style.display = 'block';
+            document.getElementById('finalScore').classList.remove('show');
+            
+            loadQuestion();
+        }
+
+        // התחל את המשחק
+        loadQuestion();
+    </script>
+</body>
+</html>
